@@ -1,0 +1,38 @@
+# Compiled source #
+*.class
+*/bin/*
+
+# Eclipse files
+.project
+.classpath
+.settings
+
+# Packages
+*.jar
+*.war
+*.ear
+
+
+# Maven build files
+target
+reports
+dependency-reduced-pom.xml
+
+# PMD
+.pmd
+
+# Merge files
+*.orig
+
+# Log files
+*.log
+# backup files
+*~
+# idea
+*.iml
+.idea
+
+# Checkstyle files
+*.checkstyle
+
+
