@@ -1,4 +1,5 @@
-# Netty Based Apache Kafka Producer
+# Netty Based Apache Kafka Producer [![Build Status](https://travis-ci.org/milenkovicm/netty-kafka-producer.svg)](https://travis-ci.org/milenkovicm/netty-kafka-producer)
+
 
 A very short POC to see if it is possible to make netty based kafka producer which utilizes netty's off-heap buffer allocators.  
 
@@ -23,6 +24,26 @@ KafkaTopic kafkaTopic = producer.topic();
 kafkaTopic.send(key,message);
 ```
 
+To redefine how producer partitions data you have to implement `Partitioner`, which is similar to original kafka partitioner interface.
+
+```java
+public class RRPartitioner extends Partitioner {
+    @Override
+    public int partition(ByteBuf key, int numberOfPartitions) {
+        return Math.abs(key.getByte(0) % numberOfPartitions);
+    }
+}
+```
+
+Next step is to update producer properties to include new partitioner:
+
+```java
+ProducerProperties properties = new ProducerProperties();
+properties.override(ProducerProperties.PARTITIONER, new RRPartitioner());
+
+KafkaProducer producer = new KafkaProducer("localhost", 9092, "test_topic", properties);
+```
+
 Netty producer has no runtime dependency on any kafka or scala package.
 
 ## Copy vs composite 
@@ -34,7 +55,7 @@ and `CompositeProducerHandler` which uses `CompositeByteBuf` to wrap message bef
 ## Producer properties
 
 Producer has three types of `ProducerProperties`, `Netty`, `Kafka` and network specific configuration. All properties are type safe.
-If no producer propertie is specified at startup it will use sensible defaults.
+If no property specified producer will use sensible defaults.
 
 ## Message acknowledgment
 
@@ -107,8 +128,7 @@ Producer also creates one `Channel` which will be used for metadata retrieval. M
 - improve broker error handling and better handling of broker disconnections.
 - possibility to specify multiply brokers for metadata retrieval.
 
-```
-#!java
+```java
 KafkaProducer producer = new KafkaProducer("host1:9092,host2:9092,host3:9092", "test_topic", properties);
 ```
 
