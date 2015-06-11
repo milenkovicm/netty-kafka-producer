@@ -77,7 +77,7 @@ In case of write failures `Future` will be completed with `isSuccess` `false`.
 When `Acknowledgment.WAIT_FOR_NO_ONE` is selected no acknowledgment will be available and netty will select to use 
 `channel.voidPromise()` which means no write failures could be detected. 
 
-By default `Acknowledgment.WAIT_FOR_LEADER` is selected. To change it: 
+By default it will `Acknowledgment.WAIT_FOR_LEADER`. To change it: 
 
 ```java
 ProducerProperties properties = new ProducerProperties();
