@@ -15,15 +15,14 @@
  */
 package com.github.milenkovicm.kafka;
 
-import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-
 import com.github.milenkovicm.kafka.protocol.Acknowledgment;
 import com.github.milenkovicm.kafka.util.BackoffStrategy;
 import com.github.milenkovicm.kafka.util.ParkBackoffStrategy;
-
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.internal.PlatformDependent;
+
+import java.util.Objects;
+import java.util.concurrent.ConcurrentMap;
 
 // https://kafka.apache.org/documentation.html#producerconfigs
 public class ProducerProperties {
@@ -37,8 +36,9 @@ public class ProducerProperties {
     public static final ProducerProperty<Boolean> NETTY_DEBUG_PIPELINE = new ProducerProperty<>(Boolean.FALSE);
     public static final ProducerProperty<Integer> NETTY_HIGH_WATERMARK = new ProducerProperty<>(100_000_000);
     public static final ProducerProperty<Integer> NETTY_LOW_WATERMARK = new ProducerProperty<>(80_000_000);
+    public static final ProducerProperty<Integer> NETTY_THREAD_COUNT = new ProducerProperty<>(Runtime.getRuntime().availableProcessors()*2);
     public static final ProducerProperty<Boolean> NETTY_HANDLER_COMPOSITE = new ProducerProperty<>(Boolean.FALSE);
-    public static final ProducerProperty<ByteBufAllocator> NETTY_BYTEBUFF_ALLOCATOR = new ProducerProperty<>(ByteBufAllocator.DEFAULT);
+    public static final ProducerProperty<ByteBufAllocator> NETTY_BYTE_BUF_ALLOCATOR = new ProducerProperty<>(ByteBufAllocator.DEFAULT);
     public static final ProducerProperty<BackoffStrategy> BACKOFF_STRATEGY = new ProducerProperty<>((BackoffStrategy) new ParkBackoffStrategy());
 
     public static final ProducerProperty<Integer> SO_TIMEOUT = new ProducerProperty<>(0);

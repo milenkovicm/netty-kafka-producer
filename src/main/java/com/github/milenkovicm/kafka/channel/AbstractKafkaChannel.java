@@ -15,19 +15,13 @@
  */
 package com.github.milenkovicm.kafka.channel;
 
-import java.util.concurrent.ThreadFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.milenkovicm.kafka.ProducerProperties;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractKafkaChannel {
 
@@ -41,19 +35,15 @@ public abstract class AbstractKafkaChannel {
 
     protected volatile Channel channel;
 
-    public AbstractKafkaChannel(String hostname, int port, String topicName, ProducerProperties properties) {
-        this(hostname, port, topicName, properties, "client_thread");
-    }
-
-    public AbstractKafkaChannel(String hostname, int port, String topicName, ProducerProperties properties, String threadName) {
+    public AbstractKafkaChannel(String hostname, int port, String topicName, EventLoopGroup workerGroup, ProducerProperties properties) {
         this.hostname = hostname;
         this.port = port;
         this.topicName = topicName;
+        this.workerGroup = workerGroup;
         this.properties = properties;
-        this.workerGroup = new NioEventLoopGroup(1, new CustomThreadFactory(threadName));
 
         this.bootstrap = new Bootstrap();
-        this.bootstrap.group(workerGroup);
+        this.bootstrap.group(this.workerGroup);
         this.bootstrap.channel(NioSocketChannel.class);
         this.bootstrap.option(ChannelOption.TCP_NODELAY, true);
         this.bootstrap.option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, properties.get(ProducerProperties.NETTY_HIGH_WATERMARK));
@@ -82,29 +72,12 @@ public abstract class AbstractKafkaChannel {
     }
 
     public ChannelFuture connect() {
-        LOGGER.debug("connecting to a broker ...");
-
         final ChannelFuture channelFuture = bootstrap.connect(hostname, port);
         channel = channelFuture.channel();
         return channelFuture;
     }
 
-    public Future<?> disconnect() {
-        channel.disconnect();
-        return workerGroup.shutdownGracefully();
-    }
-
-    static class CustomThreadFactory implements ThreadFactory {
-
-        final String threadName;
-
-        CustomThreadFactory(String threadName) {
-            this.threadName = threadName;
-        }
-
-        @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(r, threadName);
-        }
+    public ChannelFuture disconnect() {
+        return channel.disconnect();
     }
 }

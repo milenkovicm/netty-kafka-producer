@@ -119,9 +119,10 @@ Base set of topic metrics will be collected and exposed via JMX. (more detail to
 ## Some internals 
 
 Producer creates one `Channel` per broker involved in topic partitioning. 
-Each `Channel` has it's own `EventLoopGroup` with only one`Thread` running. There may be future improvements in this department, as we may decide to share `EventLoopGroup` across all channels involved in data transport.
-Also, create `Channel` per partition rather than `Channel` per broker, may be under consideration.
-Producer also creates one `Channel` which will be used for metadata retrieval. Metadata channel connects to the host specified in producer constructor (for initial connection) or to some of active brokers (in cases of metadata connection failures). 
+Channels share common `EventLoopGroup` with configurable numbers of threads (use `ProducerProperties.NETTY_THREAD_COUNT`).
+Producer will create one `Channel` which will be used for metadata retrieval. 
+Host specified in producer constructor will initially be used as metadata host, later some of active brokers may be elected to be used as metadata connection if primary connection fails.
+. 
 
 ## Things coming
 
@@ -137,8 +138,6 @@ KafkaProducer producer = new KafkaProducer("host1:9092,host2:9092,host3:9092", "
 - (maybe) multi-topic support - currently is limited to only one topic.
 - (maybe) ability for application to listen for topology changes.
 - (maybe) per partition client connection - currently producer will establish one connection per broker. In some cases it may be useful to have connection per partition. 
-- (maybe) shared `EventLoopGroup` with predefined number of treads - currently each connection will create `EventLoopGroup` limited to one thread. 
-
 
 ## Performance numbers
 

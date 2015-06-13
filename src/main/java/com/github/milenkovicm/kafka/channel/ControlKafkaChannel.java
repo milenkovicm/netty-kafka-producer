@@ -15,6 +15,7 @@
  */
 package com.github.milenkovicm.kafka.channel;
 
+import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +33,8 @@ public class ControlKafkaChannel extends AbstractKafkaChannel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ControlKafkaChannel.class);
 
-    public ControlKafkaChannel(String host, int port, String topicName, ProducerProperties properties) {
-        super(host, port, topicName, properties, "control_" + host + ":" + port);
+    public ControlKafkaChannel(String host, int port, String topicName, EventLoopGroup workerGroup,ProducerProperties properties) {
+        super(host, port, topicName, workerGroup, properties);
     }
 
     @Override

@@ -15,24 +15,22 @@
  */
 package com.github.milenkovicm.kafka;
 
-import static org.hamcrest.CoreMatchers.is;
-
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
+import io.netty.buffer.Unpooled;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.message.MessageAndMetadata;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import io.netty.buffer.Unpooled;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-@Ignore("test works but it may need some time to finish as kafka controler waits some time to replicate data before it dies")
+import static org.hamcrest.CoreMatchers.is;
+
+@Ignore("test works but it may need some time to finish as kafka controller waits some time to replicate data before it dies")
 public class FailureTest extends AbstractMultiBrokerTest {
     public static final String TEST_MESSAGE = "test message from netty - good job";
 
@@ -49,6 +47,7 @@ public class FailureTest extends AbstractMultiBrokerTest {
 
         createTopic(topic, 2, 2);
         ProducerProperties properties = new ProducerProperties();
+        properties.override(ProducerProperties.NETTY_THREAD_COUNT, 1);
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
         properties.override(ProducerProperties.PARTITIONER, new RRPartitioner());
 

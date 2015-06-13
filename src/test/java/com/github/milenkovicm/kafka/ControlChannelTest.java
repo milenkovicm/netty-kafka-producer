@@ -15,22 +15,21 @@
  */
 package com.github.milenkovicm.kafka;
 
-import static org.hamcrest.CoreMatchers.is;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.github.milenkovicm.kafka.channel.ControlKafkaChannel;
 import com.github.milenkovicm.kafka.channel.KafkaPromise;
 import com.github.milenkovicm.kafka.protocol.Error;
 import com.github.milenkovicm.kafka.protocol.KafkaException;
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
-
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class ControlChannelTest extends AbstractSingleBrokerTest {
     final String topic = "test";
@@ -42,7 +41,7 @@ public class ControlChannelTest extends AbstractSingleBrokerTest {
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
 
-        ControlKafkaChannel controlKafkaChannel = new ControlKafkaChannel("localhost", START_PORT, topic, properties);
+        ControlKafkaChannel controlKafkaChannel = new ControlKafkaChannel("localhost", START_PORT, topic, new NioEventLoopGroup(),properties);
         controlKafkaChannel.connect().sync();
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -67,7 +66,7 @@ public class ControlChannelTest extends AbstractSingleBrokerTest {
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
 
-        ControlKafkaChannel controlKafkaChannel = new ControlKafkaChannel("localhost", START_PORT, topicName, properties);
+        ControlKafkaChannel controlKafkaChannel = new ControlKafkaChannel("localhost", START_PORT, topicName,new NioEventLoopGroup(), properties);
 
         controlKafkaChannel.connect().sync();
         try {

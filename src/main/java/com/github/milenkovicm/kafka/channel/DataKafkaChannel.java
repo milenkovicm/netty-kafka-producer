@@ -24,10 +24,7 @@ import com.github.milenkovicm.kafka.protocol.Convert;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LoggingHandler;
@@ -39,8 +36,8 @@ public class DataKafkaChannel extends AbstractKafkaChannel {
 
     final MetricHandler metricHandler;
 
-    public DataKafkaChannel(String host, int port, int brokerId, String topicName, ProducerProperties properties) {
-        super(host, port, topicName, properties, "data_" + brokerId + "_" + host + ":" + port);
+    public DataKafkaChannel(String host, int port, int brokerId, String topicName, EventLoopGroup workerGroup,ProducerProperties properties) {
+        super(host, port, topicName, workerGroup, properties);
         this.brokerId = brokerId;
         this.clientId = properties.get(ProducerProperties.PRODUCER_ID);
         this.metricHandler = new MetricHandler(properties, topicName, "data");

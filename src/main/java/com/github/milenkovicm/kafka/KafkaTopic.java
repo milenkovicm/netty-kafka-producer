@@ -38,7 +38,7 @@ public class KafkaTopic {
 
     public KafkaTopic(Partitioner partitioner, ProducerProperties properties) {
         this.partitioner = partitioner;
-        this.allocator = properties.get(ProducerProperties.NETTY_BYTEBUFF_ALLOCATOR);
+        this.allocator = properties.get(ProducerProperties.NETTY_BYTE_BUF_ALLOCATOR);
         this.backoffStrategy = properties.get(ProducerProperties.BACKOFF_STRATEGY);
         this.ack = properties.get(ProducerProperties.DATA_ACK);
     }
