@@ -15,17 +15,19 @@
  */
 package com.github.milenkovicm.kafka.util;
 
-import java.util.concurrent.locks.LockSupport;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
+import java.util.concurrent.locks.LockSupport;
+
 public class ParkBackoffStrategy extends BackoffStrategy {
+
     @Override
-    public boolean handle(Channel channel, ByteBuf message) {
+    public boolean handle(Channel channel, ByteBuf key, ByteBuf message) {
         while (!channel.isWritable()) {
-            LockSupport.parkNanos(1);
+            LockSupport.parkNanos(100);
         }
+
         return false;
     }
 }

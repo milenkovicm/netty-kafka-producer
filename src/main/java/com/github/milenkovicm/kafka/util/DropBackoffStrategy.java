@@ -21,8 +21,14 @@ import io.netty.channel.Channel;
 public class DropBackoffStrategy extends BackoffStrategy {
 
     @Override
-    public boolean handle(Channel channel, ByteBuf message) {
-        message.release();
+    public boolean handle(Channel channel, ByteBuf key, ByteBuf message) {
+        if (key != null) {
+            key.release();
+        }
+        if (message != null) {
+            message.release();
+        }
+
         return true;
     }
 }

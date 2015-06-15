@@ -23,16 +23,20 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.DefaultChannelPromise;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.Arrays;
+import java.util.concurrent.locks.LockSupport;
 
 public class KafkaTopic {
 
-    protected final Partitioner partitioner;
+    final Partitioner partitioner;
     final ByteBufAllocator allocator;
     final BackoffStrategy backoffStrategy;
     final Acknowledgment ack;
+    final int backoff;
 
     private volatile DataKafkaChannel[] partitions = new DataKafkaChannel[0];
 
@@ -41,13 +45,13 @@ public class KafkaTopic {
         this.allocator = properties.get(ProducerProperties.NETTY_BYTE_BUF_ALLOCATOR);
         this.backoffStrategy = properties.get(ProducerProperties.BACKOFF_STRATEGY);
         this.ack = properties.get(ProducerProperties.DATA_ACK);
+        this.backoff = properties.get(ProducerProperties.RETRY_BACKOFF);
     }
 
     synchronized void initialize(int numberOfPartitions) {
         if (this.partitions.length != 0) {
             return;
         }
-
         this.partitions = new DataKafkaChannel[numberOfPartitions];
     }
 
@@ -85,7 +89,6 @@ public class KafkaTopic {
                 dataKafkaChannels[i] = null;
             }
         }
-
         this.partitions = dataKafkaChannels;
     }
 
@@ -94,30 +97,54 @@ public class KafkaTopic {
         return send(key, partition, message);
     }
 
-    public Future<Void> send(ByteBuf key, int partition, ByteBuf message) {
+    public Future<Void> send(ByteBuf key, int partitionId, ByteBuf message) {
 
-        if (partition < 0 || partition >= this.partitions.length) {
-            throw new RuntimeException("no such partition: " + partition);
+        if (partitionId < 0 || partitionId >= this.partitions.length) {
+            throw new RuntimeException("no such partition: " + partitionId);
         }
 
-        AbstractKafkaChannel[] partitions = this.partitions;
-        if (partitions[partition] == null) {
-            // TODO: how to handle this case?
-            return null;
+        AbstractKafkaChannel partition = this.partitions[partitionId];
+
+        if (partition == null) {
+            // wait for few nanos and then check if partition is there
+            LockSupport.parkNanos(backoff*1000000);
+            partition = this.partitions[partitionId];
+
+            // default behaviour, drop message
+            // should consider different strategies
+            if (partition == null) {
+                this.release(key, message);
+                return this.getDefaultChannelPromise();
+            }
         }
 
-        final Channel channel = partitions[partition].channel();
-        final ChannelPromise channelPromise = ack == Acknowledgment.WAIT_FOR_NO_ONE ? channel.voidPromise() : channel.newPromise();
+        final Channel channel = partition.channel();
+        final ChannelPromise channelPromise = this.getChannelPromise(channel);
 
         if (!channel.isWritable()) {
-            if (backoffStrategy.handle(channel, message)) {
+            if (backoffStrategy.handle(channel, key, message)) {
                 channelPromise.cancel(true);
                 return channelPromise;
             }
         }
 
-        final ByteBuf messageSet = DataKafkaChannel.createMessageSet(allocator, key, partition, message);
+        final ByteBuf messageSet = DataKafkaChannel.createMessageSet(allocator, key, partitionId, message);
+        this.release(key, message);
 
+        return channel.writeAndFlush(messageSet, channelPromise);
+    }
+
+    private ChannelPromise getChannelPromise(Channel channel) {
+        return ack == Acknowledgment.WAIT_FOR_NO_ONE ? channel.voidPromise() : channel.newPromise();
+    }
+
+    private DefaultChannelPromise getDefaultChannelPromise() {
+        final DefaultChannelPromise channelPromise = new DefaultChannelPromise(null, GlobalEventExecutor.INSTANCE);
+        channelPromise.cancel(true);
+        return channelPromise;
+    }
+
+    private void release(ByteBuf key, ByteBuf message) {
         if (message != null) {
             message.release();
         }
@@ -125,7 +152,5 @@ public class KafkaTopic {
         if (key != null) {
             key.release();
         }
-
-        return channel.writeAndFlush(messageSet, channelPromise);
     }
 }

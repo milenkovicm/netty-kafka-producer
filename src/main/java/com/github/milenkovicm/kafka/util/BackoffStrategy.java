@@ -19,5 +19,5 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
 public abstract class BackoffStrategy {
-    abstract public boolean handle(Channel channel, ByteBuf message);
+    abstract public boolean handle(Channel channel, ByteBuf key, ByteBuf message);
 }
