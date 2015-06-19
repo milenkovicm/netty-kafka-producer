@@ -139,6 +139,38 @@ KafkaProducer producer = new KafkaProducer("host1:9092,host2:9092,host3:9092", "
 - (maybe) ability for application to listen for topology changes.
 - (maybe) per partition client connection - currently producer will establish one connection per broker. In some cases it may be useful to have connection per partition. 
 
+## Example 
+
+```java
+package com.github.milenkovicm.kafka.example;
+
+import com.github.milenkovicm.kafka.KafkaProducer;
+import com.github.milenkovicm.kafka.KafkaTopic;
+import com.github.milenkovicm.kafka.ProducerProperties;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
+public class Example {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        ProducerProperties properties = new ProducerProperties();
+        properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
+
+        ByteBuf key = ByteBufAllocator.DEFAULT.buffer(10); // add some key here
+        ByteBuf value = ByteBufAllocator.DEFAULT.buffer(10); // and value here
+
+        KafkaProducer producer = new KafkaProducer("localhost", 9092, "test_topic", properties);
+        producer.connect().sync();
+
+        KafkaTopic kafkaTopic = producer.topic();
+        kafkaTopic.send(key,value);
+
+        producer.disconnect().sync();
+    }
+}
+
+```
 ## Performance numbers
 
 We didn't compare kafka native producer and netty based producer so far as it wouldn't be like to like comparison, netty based producer plays completely different role to us. 
