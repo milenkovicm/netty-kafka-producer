@@ -6,7 +6,7 @@ A very short POC to see if it is possible to make netty based kafka producer whi
 At the moment producer is very limited. It can connect to brokers and send messages to them, and that is more or less end of it's capabilities. 
 There is basic support for broker or connection failures. As this is only POC please expect many rough edges which need further attention. 
 
-If you need battle tested kafka producer the the original one is better fit at the moment.
+If you need battle tested kafka producer the the original one is better fit at the moment, especially if you need at-least-once semantics. 
 
 Producer was tested with apache kafka 0.8.2.1.
 
@@ -192,3 +192,4 @@ I/O profile (bytes/sec):
 
  - https://kafka.apache.org
  - https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol
+ - https://cwiki.apache.org/confluence/display/KAFKA/Writing+a+Driver+for+Kafka
