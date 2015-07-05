@@ -42,6 +42,7 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.11</artifactId>
             <version>${version.kafka}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>netty</artifactId>
