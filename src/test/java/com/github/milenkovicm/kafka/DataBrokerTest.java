@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.milenkovicm.kafka;
 
-import com.github.milenkovicm.kafka.channel.DataKafkaChannel;
+import com.github.milenkovicm.kafka.connection.DataKafkaBroker;
 import com.github.milenkovicm.kafka.protocol.Acknowledgment;
 import com.github.milenkovicm.kafka.protocol.KafkaException;
 import io.netty.channel.ChannelFuture;
@@ -29,7 +30,8 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public class DataChannelTest extends AbstractSingleBrokerTest {
+public class DataBrokerTest extends AbstractSingleBrokerTest {
+
     public static final String TEST_MESSAGE = "test message from netty - netty likes kafka";
     final String topic = "test";
 
@@ -41,7 +43,7 @@ public class DataChannelTest extends AbstractSingleBrokerTest {
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
 
-        DataKafkaChannel dataChannel = new DataKafkaChannel("localhost", START_PORT, 0, topic,new NioEventLoopGroup(), properties);
+        DataKafkaBroker dataChannel = new DataKafkaBroker("localhost", START_PORT, 0, topic,new NioEventLoopGroup(), properties);
         dataChannel.connect().sync();
 
         dataChannel.send(freeLaterBuffer("1".getBytes()), 0, freeLaterBuffer(TEST_MESSAGE.getBytes()));
@@ -60,7 +62,7 @@ public class DataChannelTest extends AbstractSingleBrokerTest {
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
 
-        DataKafkaChannel dataChannel = new DataKafkaChannel("localhost", START_PORT, 0, "unknown_topic",new NioEventLoopGroup(), properties);
+        DataKafkaBroker dataChannel = new DataKafkaBroker("localhost", START_PORT, 0, "unknown_topic",new NioEventLoopGroup(), properties);
         dataChannel.connect().sync();
 
         final ChannelFuture future = dataChannel.send(freeLaterBuffer("1".getBytes()), 0, freeLaterBuffer(TEST_MESSAGE.getBytes()));
@@ -76,7 +78,7 @@ public class DataChannelTest extends AbstractSingleBrokerTest {
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
         properties.override(ProducerProperties.DATA_ACK, Acknowledgment.WAIT_FOR_NO_ONE);
 
-        DataKafkaChannel dataChannel = new DataKafkaChannel("localhost", START_PORT, 0, "unknown_topic", new NioEventLoopGroup(), properties);
+        DataKafkaBroker dataChannel = new DataKafkaBroker("localhost", START_PORT, 0, "unknown_topic", new NioEventLoopGroup(), properties);
         dataChannel.connect().sync();
 
         final ChannelFuture future = dataChannel.send(freeLaterBuffer("1".getBytes()), 0, freeLaterBuffer(TEST_MESSAGE.getBytes()));

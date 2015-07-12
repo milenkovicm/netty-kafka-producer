@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.milenkovicm.kafka;
 
-import com.github.milenkovicm.kafka.channel.ControlKafkaChannel;
-import com.github.milenkovicm.kafka.channel.KafkaPromise;
+import com.github.milenkovicm.kafka.connection.ControlKafkaBroker;
+import com.github.milenkovicm.kafka.connection.KafkaPromise;
 import com.github.milenkovicm.kafka.protocol.Error;
 import com.github.milenkovicm.kafka.protocol.KafkaException;
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public class ControlChannelTest extends AbstractSingleBrokerTest {
+public class ControlBrokerTest extends AbstractSingleBrokerTest {
     final String topic = "test";
 
     @Test
@@ -41,7 +42,7 @@ public class ControlChannelTest extends AbstractSingleBrokerTest {
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
 
-        ControlKafkaChannel controlKafkaChannel = new ControlKafkaChannel("localhost", START_PORT, topic, new NioEventLoopGroup(),properties);
+        ControlKafkaBroker controlKafkaChannel = new ControlKafkaBroker("localhost", START_PORT, topic, new NioEventLoopGroup(),properties);
         controlKafkaChannel.connect().sync();
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -66,7 +67,7 @@ public class ControlChannelTest extends AbstractSingleBrokerTest {
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
 
-        ControlKafkaChannel controlKafkaChannel = new ControlKafkaChannel("localhost", START_PORT, topicName,new NioEventLoopGroup(), properties);
+        ControlKafkaBroker controlKafkaChannel = new ControlKafkaBroker("localhost", START_PORT, topicName,new NioEventLoopGroup(), properties);
 
         controlKafkaChannel.connect().sync();
         try {

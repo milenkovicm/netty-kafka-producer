@@ -16,8 +16,8 @@
 
 package com.github.milenkovicm.kafka;
 
-import com.github.milenkovicm.kafka.channel.AbstractKafkaChannel;
-import com.github.milenkovicm.kafka.channel.DataKafkaChannel;
+import com.github.milenkovicm.kafka.connection.AbstractKafkaBroker;
+import com.github.milenkovicm.kafka.connection.DataKafkaBroker;
 import com.github.milenkovicm.kafka.protocol.Acknowledgment;
 import com.github.milenkovicm.kafka.util.BackoffStrategy;
 import io.netty.buffer.ByteBuf;
@@ -39,7 +39,7 @@ public class KafkaTopic {
     final Acknowledgment ack;
     final int backoff;
 
-    private volatile DataKafkaChannel[] partitions = new DataKafkaChannel[0];
+    private volatile DataKafkaBroker[] partitions = new DataKafkaBroker[0];
 
     KafkaTopic(Partitioner partitioner, ProducerProperties properties) {
         this.partitioner = partitioner;
@@ -53,11 +53,11 @@ public class KafkaTopic {
         if (this.partitions.length != 0) {
             return;
         }
-        this.partitions = new DataKafkaChannel[numberOfPartitions];
+        this.partitions = new DataKafkaBroker[numberOfPartitions];
     }
 
-    synchronized void set(DataKafkaChannel dataKafkaChannel, int partition) {
-        final DataKafkaChannel[] partitions = this.partitions;
+    synchronized void set(DataKafkaBroker dataKafkaChannel, int partition) {
+        final DataKafkaBroker[] partitions = this.partitions;
         if (partition < 0 || partition >= this.partitions.length) {
             throw new RuntimeException("no such partition: " + partition);
         }
@@ -65,14 +65,14 @@ public class KafkaTopic {
             return;
         }
 
-        final DataKafkaChannel[] dataKafkaChannels = Arrays.copyOf(partitions, partitions.length);
+        final DataKafkaBroker[] dataKafkaChannels = Arrays.copyOf(partitions, partitions.length);
         dataKafkaChannels[partition] = dataKafkaChannel;
 
         this.partitions = dataKafkaChannels;
     }
 
-    DataKafkaChannel get() {
-        final DataKafkaChannel[] partitions = this.partitions;
+    DataKafkaBroker get() {
+        final DataKafkaBroker[] partitions = this.partitions;
         for (int i = 0; i < partitions.length; i++) {
             if (partitions[i] != null) {
                 return partitions[i];
@@ -81,9 +81,9 @@ public class KafkaTopic {
         return null;
     }
 
-    synchronized void remove(DataKafkaChannel dataKafkaChannel) {
-        final DataKafkaChannel[] partitions = this.partitions;
-        final DataKafkaChannel[] dataKafkaChannels = Arrays.copyOf(partitions, partitions.length);
+    synchronized void remove(DataKafkaBroker dataKafkaChannel) {
+        final DataKafkaBroker[] partitions = this.partitions;
+        final DataKafkaBroker[] dataKafkaChannels = Arrays.copyOf(partitions, partitions.length);
 
         for (int i = 0; i < partitions.length; i++) {
             if (dataKafkaChannels[i] != null && dataKafkaChannels[i].equals(dataKafkaChannel)) {
@@ -94,7 +94,7 @@ public class KafkaTopic {
     }
 
     public int numberOfPartitions() {
-        DataKafkaChannel[] partitions = this.partitions;
+        DataKafkaBroker[] partitions = this.partitions;
         return (partitions == null) ? 0 : partitions.length;
     }
 
@@ -109,7 +109,7 @@ public class KafkaTopic {
             throw new RuntimeException("no such partition: " + partitionId);
         }
 
-        AbstractKafkaChannel partition = this.partitions[partitionId];
+        AbstractKafkaBroker partition = this.partitions[partitionId];
 
         if (partition == null) {
             // wait for few nanos and then check if partition is there
@@ -134,7 +134,7 @@ public class KafkaTopic {
             }
         }
 
-        final ByteBuf messageSet = DataKafkaChannel.createMessageSet(allocator, key, partitionId, message);
+        final ByteBuf messageSet = DataKafkaBroker.createMessageSet(allocator, key, partitionId, message);
         this.release(key, message);
 
         return channel.writeAndFlush(messageSet, channelPromise);

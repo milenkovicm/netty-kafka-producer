@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.milenkovicm.kafka.channel;
+
+package com.github.milenkovicm.kafka.connection;
 
 import com.github.milenkovicm.kafka.ProducerProperties;
 import com.github.milenkovicm.kafka.handler.CompositeProducerHandler;
@@ -29,14 +30,14 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LoggingHandler;
 
-public class DataKafkaChannel extends AbstractKafkaChannel {
+public class DataKafkaBroker extends AbstractKafkaBroker {
 
     public final String clientId;
     public final int brokerId;
 
     final MetricHandler metricHandler;
 
-    public DataKafkaChannel(String host, int port, int brokerId, String topicName, EventLoopGroup workerGroup,ProducerProperties properties) {
+    public DataKafkaBroker(String host, int port, int brokerId, String topicName, EventLoopGroup workerGroup, ProducerProperties properties) {
         super(host, port, topicName, workerGroup, properties);
         this.brokerId = brokerId;
         this.clientId = properties.get(ProducerProperties.PRODUCER_ID);

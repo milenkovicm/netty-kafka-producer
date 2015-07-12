@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.milenkovicm.kafka.channel;
+
+package com.github.milenkovicm.kafka.connection;
 
 import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
@@ -29,11 +30,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LoggingHandler;
 
-public class ControlKafkaChannel extends AbstractKafkaChannel {
+public class ControlKafkaBroker extends AbstractKafkaBroker {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ControlKafkaChannel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ControlKafkaBroker.class);
 
-    public ControlKafkaChannel(String host, int port, String topicName, EventLoopGroup workerGroup,ProducerProperties properties) {
+    public ControlKafkaBroker(String host, int port, String topicName, EventLoopGroup workerGroup, ProducerProperties properties) {
         super(host, port, topicName, workerGroup, properties);
     }
 

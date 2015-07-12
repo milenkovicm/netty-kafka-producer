@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.milenkovicm.kafka.channel;
+
+package com.github.milenkovicm.kafka.connection;
 
 import com.github.milenkovicm.kafka.ProducerProperties;
 import io.netty.bootstrap.Bootstrap;
@@ -23,9 +24,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractKafkaChannel {
+public abstract class AbstractKafkaBroker {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractKafkaChannel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractKafkaBroker.class);
     public final String hostname;
     public final int port;
     final Bootstrap bootstrap;
@@ -35,7 +36,7 @@ public abstract class AbstractKafkaChannel {
 
     protected volatile Channel channel;
 
-    public AbstractKafkaChannel(String hostname, int port, String topicName, EventLoopGroup workerGroup, ProducerProperties properties) {
+    public AbstractKafkaBroker(String hostname, int port, String topicName, EventLoopGroup workerGroup, ProducerProperties properties) {
         this.hostname = hostname;
         this.port = port;
         this.topicName = topicName;

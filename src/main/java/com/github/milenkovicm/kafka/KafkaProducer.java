@@ -16,9 +16,9 @@
 
 package com.github.milenkovicm.kafka;
 
-import com.github.milenkovicm.kafka.channel.ControlKafkaChannel;
-import com.github.milenkovicm.kafka.channel.DataKafkaChannel;
-import com.github.milenkovicm.kafka.channel.KafkaPromise;
+import com.github.milenkovicm.kafka.connection.ControlKafkaBroker;
+import com.github.milenkovicm.kafka.connection.DataKafkaBroker;
+import com.github.milenkovicm.kafka.connection.KafkaPromise;
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -49,9 +49,9 @@ public class KafkaProducer {
     final KafkaTopic kafkaTopic;
     final ProducerProperties properties;
     final NioEventLoopGroup workerGroup;
-    final Map<Integer, DataKafkaChannel> brokers = new ConcurrentHashMap<>();
+    final Map<Integer, DataKafkaBroker> brokers = new ConcurrentHashMap<>();
 
-    volatile ControlKafkaChannel control = null;
+    volatile ControlKafkaBroker control = null;
     volatile int numberOfPartitions;
     volatile boolean shutdown = false;
 
@@ -95,7 +95,7 @@ public class KafkaProducer {
 
         final ChannelFuture disconnectControl = control.channel().disconnect();
         futures.add(disconnectControl);
-        for (DataKafkaChannel data : brokers.values()) {
+        for (DataKafkaBroker data : brokers.values()) {
             final Future<?> disconnectData = data.disconnect();
             futures.add(disconnectData);
         }
@@ -115,7 +115,7 @@ public class KafkaProducer {
 
     // connect control channel which handles all metadata queries
     void connectControl(String hostname, int port, Promise<Void> promise) {
-        ControlKafkaChannel control = new ControlKafkaChannel(hostname, port, topicName, workerGroup, properties);
+        ControlKafkaBroker control = new ControlKafkaBroker(hostname, port, topicName, workerGroup, properties);
         this.control = control;
         control.connect().addListener(new ControlConnectListener(promise));
         control.channel().closeFuture().addListener(new ControlDisconnectedListener(control));
@@ -140,7 +140,7 @@ public class KafkaProducer {
 
         for (MetadataResponse.PartitionMetadata partition : topic.partitions) {
             LOGGER.debug("brokerId: [{}] assigned to partitionId: [{}]", partition.leader, partition.partitionId);
-            DataKafkaChannel dataKafkaChannel = getDataChannel(metadataResponse, partition.leader, promises);
+            DataKafkaBroker dataKafkaChannel = getDataChannel(metadataResponse, partition.leader, promises);
             this.kafkaTopic.set(dataKafkaChannel, partition.partitionId);
         }
         completePromise(promise, promises);
@@ -156,23 +156,23 @@ public class KafkaProducer {
         }
     }
 
-    DataKafkaChannel getDataChannel(MetadataResponse metadataResponse, Integer brokerId, List<ChannelFuture> promises) {
-        DataKafkaChannel dataKafkaChannel = brokers.get(brokerId);
+    DataKafkaBroker getDataChannel(MetadataResponse metadataResponse, Integer brokerId, List<ChannelFuture> promises) {
+        DataKafkaBroker dataKafkaChannel = brokers.get(brokerId);
 
         if (dataKafkaChannel != null) {
             return dataKafkaChannel;
         } else {
             final MetadataResponse.Broker broker = findBroker(metadataResponse, brokerId);
-            final DataKafkaChannel channel = connectDataChannel(promises, broker);
+            final DataKafkaBroker channel = connectDataChannel(promises, broker);
             brokers.put(broker.nodeId, channel);
 
             return channel;
         }
     }
 
-    DataKafkaChannel connectDataChannel(List<ChannelFuture> promises, MetadataResponse.Broker broker) {
+    DataKafkaBroker connectDataChannel(List<ChannelFuture> promises, MetadataResponse.Broker broker) {
         LOGGER.debug("connecting data channel to broker:[{}] hostname: [{}] port:[{}]", broker.nodeId, broker.host, broker.port);
-        final DataKafkaChannel channel = new DataKafkaChannel(broker.host, broker.port, broker.nodeId, topicName, workerGroup, properties);
+        final DataKafkaBroker channel = new DataKafkaBroker(broker.host, broker.port, broker.nodeId, topicName, workerGroup, properties);
 
         final ChannelFuture future = channel.connect();
         future.channel().closeFuture().addListener(new BrokerDisconnectedListener(channel));
@@ -190,9 +190,9 @@ public class KafkaProducer {
     }
 
     class ControlDisconnectedListener implements ChannelFutureListener {
-        final ControlKafkaChannel controlKafkaChannel;
+        final ControlKafkaBroker controlKafkaChannel;
 
-        ControlDisconnectedListener(ControlKafkaChannel controlKafkaChannel) {
+        ControlDisconnectedListener(ControlKafkaBroker controlKafkaChannel) {
             this.controlKafkaChannel = controlKafkaChannel;
         }
 
@@ -246,9 +246,9 @@ public class KafkaProducer {
 
     class BrokerDisconnectedListener implements ChannelFutureListener {
 
-        final DataKafkaChannel dataKafkaChannel;
+        final DataKafkaBroker dataKafkaChannel;
 
-        BrokerDisconnectedListener(DataKafkaChannel dataKafkaChannel) {
+        BrokerDisconnectedListener(DataKafkaBroker dataKafkaChannel) {
             this.dataKafkaChannel = dataKafkaChannel;
         }
 
@@ -269,7 +269,7 @@ public class KafkaProducer {
 
         @Override
         public void run() {
-            ControlKafkaChannel control = KafkaProducer.this.control;
+            ControlKafkaBroker control = KafkaProducer.this.control;
             if (control == null) {
                 return;
             }
@@ -287,7 +287,7 @@ public class KafkaProducer {
 
         @Override
         public void run() {
-            final DataKafkaChannel dataKafkaChannel = kafkaTopic.get();
+            final DataKafkaBroker dataKafkaChannel = kafkaTopic.get();
             final DefaultPromise<Void> promise = new DefaultPromise<Void>(eventExecutor);
             if (dataKafkaChannel != null) {
                 connectControl(dataKafkaChannel.hostname, dataKafkaChannel.port, promise);

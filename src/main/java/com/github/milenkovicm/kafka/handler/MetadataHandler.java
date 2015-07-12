@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.milenkovicm.kafka.handler;
 
 import java.util.HashMap;
@@ -22,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.milenkovicm.kafka.ProducerProperties;
-import com.github.milenkovicm.kafka.channel.ControlTuple;
-import com.github.milenkovicm.kafka.channel.KafkaPromise;
+import com.github.milenkovicm.kafka.connection.ControlTuple;
+import com.github.milenkovicm.kafka.connection.KafkaPromise;
 import com.github.milenkovicm.kafka.protocol.Api;
 import com.github.milenkovicm.kafka.protocol.Convert;
 import com.github.milenkovicm.kafka.protocol.Error;
