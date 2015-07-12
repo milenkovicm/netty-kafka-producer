@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.milenkovicm.kafka;
 
 import com.github.milenkovicm.kafka.channel.AbstractKafkaChannel;
@@ -40,7 +41,7 @@ public class KafkaTopic {
 
     private volatile DataKafkaChannel[] partitions = new DataKafkaChannel[0];
 
-    public KafkaTopic(Partitioner partitioner, ProducerProperties properties) {
+    KafkaTopic(Partitioner partitioner, ProducerProperties properties) {
         this.partitioner = partitioner;
         this.allocator = properties.get(ProducerProperties.NETTY_BYTE_BUF_ALLOCATOR);
         this.backoffStrategy = properties.get(ProducerProperties.BACKOFF_STRATEGY);
@@ -90,6 +91,11 @@ public class KafkaTopic {
             }
         }
         this.partitions = dataKafkaChannels;
+    }
+
+    public int numberOfPartitions() {
+        DataKafkaChannel[] partitions = this.partitions;
+        return (partitions == null) ? 0 : partitions.length;
     }
 
     public Future<Void> send(ByteBuf key, ByteBuf message) {

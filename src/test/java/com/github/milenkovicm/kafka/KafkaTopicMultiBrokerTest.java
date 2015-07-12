@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.milenkovicm.kafka;
 
-import static org.hamcrest.CoreMatchers.is;
+import io.netty.buffer.Unpooled;
+import kafka.consumer.ConsumerIterator;
+import kafka.consumer.KafkaStream;
+import kafka.message.MessageAndMetadata;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.KafkaStream;
-import kafka.message.MessageAndMetadata;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import io.netty.buffer.Unpooled;
+import static org.hamcrest.CoreMatchers.is;
 
 public class KafkaTopicMultiBrokerTest extends AbstractMultiBrokerTest {
 
@@ -38,8 +37,9 @@ public class KafkaTopicMultiBrokerTest extends AbstractMultiBrokerTest {
     public void test_producer() throws Exception {
 
         String topic = "test";
+        int numberOfPartition = 4;
 
-        createTopic(topic, 4, 1);
+        createTopic(topic, numberOfPartition, 1);
         ProducerProperties properties = new ProducerProperties();
         properties.override(ProducerProperties.NETTY_DEBUG_PIPELINE, true);
         properties.override(ProducerProperties.PARTITIONER, new RRPartitioner());
@@ -47,6 +47,8 @@ public class KafkaTopicMultiBrokerTest extends AbstractMultiBrokerTest {
         KafkaProducer producer = new KafkaProducer("localhost", START_PORT, topic, properties);
         producer.connect().sync();
         KafkaTopic kafkaTopic = producer.topic();
+
+        Assert.assertThat("number of partitions do not match", kafkaTopic.numberOfPartitions(), is(numberOfPartition));
 
         kafkaTopic.send(Unpooled.wrappedBuffer(new byte[] { 0 }), freeLaterBuffer(TEST_MESSAGE.getBytes()));
         kafkaTopic.send(Unpooled.wrappedBuffer(new byte[] { 1 }), freeLaterBuffer(TEST_MESSAGE.getBytes()));
