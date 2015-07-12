@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.milenkovicm.kafka;
 
 import com.github.milenkovicm.kafka.channel.ControlKafkaChannel;
@@ -54,17 +55,24 @@ public class KafkaProducer {
     volatile int numberOfPartitions;
     volatile boolean shutdown = false;
 
-    public KafkaProducer(String hostname, int port, String topicName, ProducerProperties properties) {
+    public KafkaProducer(String hostname, int port, String topicName, ProducerProperties properties, NioEventLoopGroup workerGroup) {
         this.properties = properties;
         this.hostname = hostname;
         this.port = port;
         this.topicName = topicName;
+        this.workerGroup = workerGroup;
+
         this.kafkaTopic = new KafkaTopic(properties.get(ProducerProperties.PARTITIONER), properties);
 
         this.eventExecutor = GlobalEventExecutor.INSTANCE;
         this.connectPromise = new DefaultPromise<>(eventExecutor);
         this.disconnectPromise = new DefaultPromise<>(eventExecutor);
-        this.workerGroup = new NioEventLoopGroup(properties.get(ProducerProperties.NETTY_THREAD_COUNT), new DefaultThreadFactory("producer-"+topicName,Thread.MAX_PRIORITY));
+
+    }
+
+    public KafkaProducer(String hostname, int port, String topicName, ProducerProperties properties) {
+        this(hostname,port,topicName,properties,new NioEventLoopGroup(properties.get(ProducerProperties.NETTY_THREAD_COUNT),
+                new DefaultThreadFactory("producer-"+topicName,Thread.MAX_PRIORITY)));
     }
 
     public KafkaProducer(String hostname, int port, String topicName) {
