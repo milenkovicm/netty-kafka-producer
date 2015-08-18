@@ -29,7 +29,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.Arrays;
-import java.util.concurrent.locks.LockSupport;
 
 public class KafkaTopic {
 
@@ -37,7 +36,6 @@ public class KafkaTopic {
     final ByteBufAllocator allocator;
     final BackoffStrategy backoffStrategy;
     final Acknowledgment ack;
-    final int backoff;
     final String topicName;
 
     private volatile DataKafkaBroker[] partitions = new DataKafkaBroker[0];
@@ -48,7 +46,6 @@ public class KafkaTopic {
         this.allocator = properties.get(ProducerProperties.NETTY_BYTE_BUF_ALLOCATOR);
         this.backoffStrategy = properties.get(ProducerProperties.BACKOFF_STRATEGY);
         this.ack = properties.get(ProducerProperties.DATA_ACK);
-        this.backoff = properties.get(ProducerProperties.RETRY_BACKOFF);
     }
 
     synchronized void initialize(int numberOfPartitions) {
@@ -118,16 +115,8 @@ public class KafkaTopic {
         AbstractKafkaBroker partition = this.partitions[partitionId];
 
         if (partition == null) {
-            // wait for few nanos and then check if partition is there
-            LockSupport.parkNanos(backoff*1000000);
-            partition = this.partitions[partitionId];
-
-            // default behaviour, drop message
-            // should consider different strategies
-            if (partition == null) {
-                this.release(key, message);
-                return this.getDefaultChannelPromise();
-            }
+            this.release(key, message);
+            return this.getDefaultChannelPromise();
         }
 
         final Channel channel = partition.channel();
