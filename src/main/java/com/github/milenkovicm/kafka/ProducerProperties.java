@@ -17,7 +17,7 @@ package com.github.milenkovicm.kafka;
 
 import com.github.milenkovicm.kafka.protocol.Acknowledgment;
 import com.github.milenkovicm.kafka.util.BackoffStrategy;
-import com.github.milenkovicm.kafka.util.ParkBackoffStrategy;
+import com.github.milenkovicm.kafka.util.DropBackoffStrategy;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.internal.PlatformDependent;
 
@@ -39,7 +39,7 @@ public class ProducerProperties {
     public static final ProducerProperty<Integer> NETTY_THREAD_COUNT = new ProducerProperty<>(Runtime.getRuntime().availableProcessors()*2);
     public static final ProducerProperty<Boolean> NETTY_HANDLER_COMPOSITE = new ProducerProperty<>(Boolean.FALSE);
     public static final ProducerProperty<ByteBufAllocator> NETTY_BYTE_BUF_ALLOCATOR = new ProducerProperty<>(ByteBufAllocator.DEFAULT);
-    public static final ProducerProperty<BackoffStrategy> BACKOFF_STRATEGY = new ProducerProperty<>((BackoffStrategy) new ParkBackoffStrategy());
+    public static final ProducerProperty<BackoffStrategy> BACKOFF_STRATEGY = new ProducerProperty<>((BackoffStrategy) new DropBackoffStrategy());
 
     public static final ProducerProperty<Integer> SO_TIMEOUT = new ProducerProperty<>(0);
     public static final ProducerProperty<Integer> SO_RCVBUF = new ProducerProperty<>(0);

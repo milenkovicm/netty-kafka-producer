@@ -38,11 +38,13 @@ public class KafkaTopic {
     final BackoffStrategy backoffStrategy;
     final Acknowledgment ack;
     final int backoff;
+    final String topicName;
 
     private volatile DataKafkaBroker[] partitions = new DataKafkaBroker[0];
 
-    KafkaTopic(Partitioner partitioner, ProducerProperties properties) {
+    KafkaTopic(Partitioner partitioner, ProducerProperties properties, String topicName) {
         this.partitioner = partitioner;
+        this.topicName = topicName;
         this.allocator = properties.get(ProducerProperties.NETTY_BYTE_BUF_ALLOCATOR);
         this.backoffStrategy = properties.get(ProducerProperties.BACKOFF_STRATEGY);
         this.ack = properties.get(ProducerProperties.DATA_ACK);
@@ -96,6 +98,10 @@ public class KafkaTopic {
     public int numberOfPartitions() {
         DataKafkaBroker[] partitions = this.partitions;
         return (partitions == null) ? 0 : partitions.length;
+    }
+
+    public String topicName(){
+        return topicName;
     }
 
     public Future<Void> send(ByteBuf key, ByteBuf message) {
@@ -158,5 +164,17 @@ public class KafkaTopic {
         if (key != null) {
             key.release();
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return "KafkaTopic{" +
+                "partitions=" + Arrays.toString(partitions) +
+                "partitionNum=" + this.numberOfPartitions() +
+                ", topicName='" + topicName + '\'' +
+                ", partitioner=" + partitioner +
+                ", ack=" + ack +
+                '}';
     }
 }

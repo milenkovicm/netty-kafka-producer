@@ -16,23 +16,17 @@
 
 package com.github.milenkovicm.kafka.connection;
 
-import io.netty.channel.EventLoopGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.milenkovicm.kafka.ProducerProperties;
 import com.github.milenkovicm.kafka.handler.MetadataHandler;
 import com.github.milenkovicm.kafka.handler.TerminalHandler;
-
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LoggingHandler;
 
 public class ControlKafkaBroker extends AbstractKafkaBroker {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ControlKafkaBroker.class);
 
     public ControlKafkaBroker(String host, int port, String topicName, EventLoopGroup workerGroup, ProducerProperties properties) {
         super(host, port, topicName, workerGroup, properties);
@@ -60,4 +54,8 @@ public class ControlKafkaBroker extends AbstractKafkaBroker {
         return kafkaPromise;
     }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

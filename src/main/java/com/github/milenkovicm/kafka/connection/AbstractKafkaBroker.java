@@ -21,12 +21,9 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractKafkaBroker {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractKafkaBroker.class);
     public final String hostname;
     public final int port;
     final Bootstrap bootstrap;
@@ -80,5 +77,16 @@ public abstract class AbstractKafkaBroker {
 
     public ChannelFuture disconnect() {
         return channel.disconnect();
+    }
+
+
+    @Override
+    public String toString() {
+        return "AbstractKafkaBroker{" +
+                "hostname='" + hostname + '\'' +
+                ", port=" + port +
+                ", topicName='" + topicName + '\'' +
+                ", channel=" + channel +
+                '}';
     }
 }

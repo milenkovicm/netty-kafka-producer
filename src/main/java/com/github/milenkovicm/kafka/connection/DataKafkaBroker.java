@@ -41,7 +41,7 @@ public class DataKafkaBroker extends AbstractKafkaBroker {
         super(host, port, topicName, workerGroup, properties);
         this.brokerId = brokerId;
         this.clientId = properties.get(ProducerProperties.PRODUCER_ID);
-        this.metricHandler = new MetricHandler(properties, topicName, "data");
+        this.metricHandler = new MetricHandler(properties, topicName);
     }
 
     public static ByteBuf createMessageSet(ByteBufAllocator allocator, ByteBuf key, int partition, ByteBuf message) {
@@ -117,5 +117,12 @@ public class DataKafkaBroker extends AbstractKafkaBroker {
     public ChannelFuture send(ByteBuf key, int partition, ByteBuf message) {
         final ByteBuf messageSet = createMessageSet(channel.alloc(), key, partition, message);
         return channel.writeAndFlush(messageSet);
+    }
+
+    @Override
+    public String toString() {
+        return "DataKafkaBroker{" +
+                "brokerId=" + brokerId +" "+ super.toString() +
+                '}';
     }
 }

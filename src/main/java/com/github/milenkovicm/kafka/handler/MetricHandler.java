@@ -30,8 +30,9 @@ import io.netty.channel.ChannelPromise;
 @ChannelHandler.Sharable
 public class MetricHandler extends ChannelDuplexHandler {
 
-    static final MetricRegistry metricRegistry = new MetricRegistry();
-    static final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
+    public static final MetricRegistry metricRegistry = new MetricRegistry();
+    public static final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
+
     static {
         jmxReporter.start();
     }
@@ -39,23 +40,21 @@ public class MetricHandler extends ChannelDuplexHandler {
     final ProducerProperties properties;
 
     final String topicName;
-    final String suffix;
 
     final Meter bytesIn;
     final Meter bytesOut;
     final Meter messageIn;
     final Meter messageOut;
 
-    public MetricHandler(ProducerProperties properties, String topicName, String suffix) {
+    public MetricHandler(ProducerProperties properties, String topicName) {
 
         this.properties = properties;
         this.topicName = topicName;
-        this.suffix = suffix;
 
-        bytesIn = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), suffix, "bytesIn"));
-        bytesOut = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), suffix, "bytesOut"));
-        messageIn = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), suffix, "messageIn"));
-        messageOut = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), suffix, "messageOut"));
+        bytesIn = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), this.topicName, "bytes_in"));
+        bytesOut = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), this.topicName, "bytes_out"));
+        messageIn = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), this.topicName, "messages_in"));
+        messageOut = metricRegistry.meter(MetricRegistry.name(MetricHandler.class.getSimpleName(), this.topicName, "messages_out"));
 
     }
 

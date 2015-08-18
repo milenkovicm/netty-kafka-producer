@@ -22,6 +22,7 @@ import com.github.milenkovicm.kafka.connection.KafkaPromise;
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
@@ -48,21 +49,21 @@ public class KafkaProducer {
 
     final KafkaTopic kafkaTopic;
     final ProducerProperties properties;
-    final NioEventLoopGroup workerGroup;
+    final EventLoopGroup workerGroup;
     final Map<Integer, DataKafkaBroker> brokers = new ConcurrentHashMap<>();
 
     volatile ControlKafkaBroker control = null;
     volatile int numberOfPartitions;
     volatile boolean shutdown = false;
 
-    public KafkaProducer(String hostname, int port, String topicName, ProducerProperties properties, NioEventLoopGroup workerGroup) {
+    public KafkaProducer(String hostname, int port, String topicName, ProducerProperties properties, EventLoopGroup workerGroup) {
         this.properties = properties;
         this.hostname = hostname;
         this.port = port;
         this.topicName = topicName;
         this.workerGroup = workerGroup;
 
-        this.kafkaTopic = new KafkaTopic(properties.get(ProducerProperties.PARTITIONER), properties);
+        this.kafkaTopic = new KafkaTopic(properties.get(ProducerProperties.PARTITIONER), properties, topicName);
 
         this.eventExecutor = GlobalEventExecutor.INSTANCE;
         this.connectPromise = new DefaultPromise<>(eventExecutor);
@@ -92,9 +93,10 @@ public class KafkaProducer {
         this.shutdown = true;
 
         List<Future<?>> futures = new ArrayList<>();
-
-        final ChannelFuture disconnectControl = control.channel().disconnect();
-        futures.add(disconnectControl);
+        if (control != null) {
+            final ChannelFuture disconnectControl = control.channel().disconnect();
+            futures.add(disconnectControl);
+        }
         for (DataKafkaBroker data : brokers.values()) {
             final Future<?> disconnectData = data.disconnect();
             futures.add(disconnectData);
