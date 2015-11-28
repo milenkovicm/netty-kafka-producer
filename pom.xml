@@ -32,8 +32,8 @@
 
     <properties>
         <version.java>1.7</version.java>
-        <version.netty>4.0.29.Final</version.netty>
-        <version.kafka>0.8.2.1</version.kafka>
+        <version.netty>4.0.33.Final</version.netty>
+        <version.kafka>0.8.2.2</version.kafka>
         <version.metrics>3.1.2</version.metrics>
     </properties>
 
