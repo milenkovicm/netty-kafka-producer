@@ -15,6 +15,7 @@
  */
 package com.github.milenkovicm.kafka;
 
+import java.io.File;
 import java.util.*;
 
 import kafka.consumer.Consumer;
@@ -24,40 +25,56 @@ import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
 import kafka.utils.MockTime;
 import kafka.utils.TestUtils;
-import kafka.utils.TestZKUtils;
 import kafka.utils.ZKStringSerializer$;
+import kafka.utils.ZkUtils;
 import kafka.zk.EmbeddedZookeeper;
 
+import org.I0Itec.zkclient.IDefaultNameSpace;
 import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.ZkServer;
+import org.apache.kafka.common.protocol.SecurityProtocol;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import scala.Option;
 
 public abstract class AbstractMultiBrokerTest extends AbstractTest {
 
     protected static final int TIMEOUT = 5000;
     protected static final int START_BROKER_ID = 0;
-    protected static final int START_PORT = TestUtils.choosePort();
+    protected static final int START_PORT = TestUtils.RandomPort();
     protected static final int DEFAULT_BROKER_COUNT = 3;
 
     protected volatile static int BROKER_COUNT = DEFAULT_BROKER_COUNT;
 
-    protected static EmbeddedZookeeper zkServer;
+    protected static ZkServer zkServer;
     protected static ZkClient zkClient;
+    protected static ZkUtils zkUtils;
 
     protected static volatile String zkConnect;
     protected static volatile List<KafkaServer> kafkaServers;
+    protected static final IDefaultNameSpace DEFAULT_NAME_SPACE = new IDefaultNameSpace() {
+        @Override
+        public void createDefaultNameSpace(ZkClient zkClient) {
+
+        }
+    };
 
     @BeforeClass
     public static void start() {
         kafkaServers = new ArrayList<>();
-        zkConnect = TestZKUtils.zookeeperConnect();
-        zkServer = new EmbeddedZookeeper(zkConnect);
-        zkClient = new ZkClient(zkServer.connectString(), 30000, 30000, ZKStringSerializer$.MODULE$);
+
+        zkServer = new ZkServer("/tmp/zk/data","/tmp/zk/log",DEFAULT_NAME_SPACE);
+        zkServer.start();
+
+        zkClient = zkServer.getZkClient();
+        zkUtils =  ZkUtils.apply(zkClient,false);
 
         for (int i = 0; i < BROKER_COUNT; i++) {
             LOGGER.info("starting test broker id: [{}] at port: [{}]", START_BROKER_ID + i, START_PORT + i);
 
-            Properties properties = TestUtils.createBrokerConfig(START_BROKER_ID + i, START_PORT + i, true);
+            Properties properties = TestUtils.createBrokerConfig(START_BROKER_ID + i,TestUtils.MockZkConnect(),
+                    true, false,START_PORT + i,
+                    Option.apply(SecurityProtocol.PLAINTEXT),Option.<File>empty(),true,false,0,false,0,false,0);
             KafkaConfig configuration = new KafkaConfig(properties);
 
             KafkaServer kafkaServer = TestUtils.createServer(configuration, new MockTime());
@@ -91,7 +108,7 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
 
     public static void createTopic(String topic, Integer partitionNum, Integer replicas) {
         TestUtils
-                .createTopic(zkClient, topic, partitionNum, replicas, scala.collection.JavaConversions.asScalaBuffer(kafkaServers), new Properties());
+                .createTopic(zkUtils, topic, partitionNum, replicas, scala.collection.JavaConversions.asScalaBuffer(kafkaServers), new Properties());
         TestUtils.waitUntilMetadataIsPropagated(scala.collection.JavaConversions.asScalaBuffer(kafkaServers), topic, 0, TIMEOUT);
     }
 

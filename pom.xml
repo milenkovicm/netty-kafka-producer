@@ -33,7 +33,7 @@
     <properties>
         <version.java>1.7</version.java>
         <version.netty>4.0.33.Final</version.netty>
-        <version.kafka>0.8.2.2</version.kafka>
+        <version.kafka>0.9.0.0</version.kafka>
         <version.metrics>3.1.2</version.metrics>
     </properties>
 
@@ -69,6 +69,12 @@
             <version>${version.kafka}</version>
             <classifier>test</classifier>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
