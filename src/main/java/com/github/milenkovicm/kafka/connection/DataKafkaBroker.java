@@ -22,7 +22,6 @@ import com.github.milenkovicm.kafka.handler.CopyProducerHandler;
 import com.github.milenkovicm.kafka.handler.MetricHandler;
 import com.github.milenkovicm.kafka.handler.TerminalHandler;
 import com.github.milenkovicm.kafka.protocol.Convert;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;

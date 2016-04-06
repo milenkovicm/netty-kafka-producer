@@ -15,11 +15,11 @@
  */
 package com.github.milenkovicm.kafka.protocol;
 
+import io.netty.util.internal.EmptyArrays;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.netty.util.internal.EmptyArrays;
 
 public enum Error {
 

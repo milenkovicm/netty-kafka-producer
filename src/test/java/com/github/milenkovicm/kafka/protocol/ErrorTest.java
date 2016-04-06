@@ -15,10 +15,10 @@
  */
 package com.github.milenkovicm.kafka.protocol;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class ErrorTest {
 

@@ -16,12 +16,6 @@
 
 package com.github.milenkovicm.kafka.handler;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.milenkovicm.kafka.ProducerProperties;
 import com.github.milenkovicm.kafka.connection.ControlTuple;
 import com.github.milenkovicm.kafka.connection.KafkaPromise;
@@ -29,13 +23,17 @@ import com.github.milenkovicm.kafka.protocol.Api;
 import com.github.milenkovicm.kafka.protocol.Convert;
 import com.github.milenkovicm.kafka.protocol.Error;
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.GenericFutureListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MetadataHandler extends ChannelDuplexHandler {
 

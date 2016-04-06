@@ -36,7 +36,7 @@ public class ControlBrokerTest extends AbstractSingleBrokerTest {
     final String topic = "test";
 
     @Test
-    public void test_fetcMetadata() throws Exception {
+    public void test_fetchMetadata() throws Exception {
         createTopic(topic);
 
         ProducerProperties properties = new ProducerProperties();

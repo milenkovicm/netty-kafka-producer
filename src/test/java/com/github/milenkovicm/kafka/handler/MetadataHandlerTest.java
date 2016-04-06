@@ -15,15 +15,14 @@
  */
 package com.github.milenkovicm.kafka.handler;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.github.milenkovicm.kafka.AbstractTest;
 import com.github.milenkovicm.kafka.ProducerProperties;
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class MetadataHandlerTest extends AbstractTest {
 

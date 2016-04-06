@@ -15,13 +15,12 @@
  */
 package com.github.milenkovicm.kafka;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class KafkaProducerTest extends AbstractSingleBrokerTest {
 

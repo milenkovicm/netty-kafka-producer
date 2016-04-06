@@ -15,14 +15,13 @@
  */
 package com.github.milenkovicm.kafka;
 
-import java.util.Random;
-import java.util.zip.CRC32;
-
+import com.github.milenkovicm.kafka.util.PureJavaCrc32;
+import io.netty.buffer.ByteBuf;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.milenkovicm.kafka.util.PureJavaCrc32;
-import io.netty.buffer.ByteBuf;
+import java.util.Random;
+import java.util.zip.CRC32;
 
 public class CrcTest extends AbstractTest {
 

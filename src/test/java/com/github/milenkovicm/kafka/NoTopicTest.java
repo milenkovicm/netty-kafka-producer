@@ -16,8 +16,8 @@
 
 package com.github.milenkovicm.kafka;
 
-import com.github.milenkovicm.kafka.protocol.*;
 import com.github.milenkovicm.kafka.protocol.Error;
+import com.github.milenkovicm.kafka.protocol.KafkaException;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.junit.Assert;

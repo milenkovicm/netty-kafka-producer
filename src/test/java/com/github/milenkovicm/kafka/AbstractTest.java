@@ -15,16 +15,15 @@
  */
 package com.github.milenkovicm.kafka;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 public class AbstractTest {
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractTest.class);

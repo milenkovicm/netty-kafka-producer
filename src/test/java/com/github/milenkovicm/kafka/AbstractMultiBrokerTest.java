@@ -15,9 +15,6 @@
  */
 package com.github.milenkovicm.kafka;
 
-import java.io.File;
-import java.util.*;
-
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
@@ -27,22 +24,27 @@ import kafka.utils.MockTime;
 import kafka.utils.TestUtils;
 import kafka.utils.ZKStringSerializer$;
 import kafka.utils.ZkUtils;
-import kafka.zk.EmbeddedZookeeper;
-
 import org.I0Itec.zkclient.IDefaultNameSpace;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkServer;
 import org.apache.kafka.common.protocol.SecurityProtocol;
+import org.apache.kafka.common.utils.Utils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import scala.Option;
 
+import java.io.File;
+import java.util.*;
+
 public abstract class AbstractMultiBrokerTest extends AbstractTest {
 
-    protected static final int TIMEOUT = 5000;
+    protected static final int TIMEOUT = 10000;
     protected static final int START_BROKER_ID = 0;
-    protected static final int START_PORT = TestUtils.RandomPort();
-    protected static final int DEFAULT_BROKER_COUNT = 3;
+    protected static final int START_PORT = 20000;//TestUtils.RandomPort();
+    protected static final int DEFAULT_BROKER_COUNT = 1;
+    protected static final int ZK_PORT = 2181;
+    protected static final String ZK_HOST = "localhost:"+ZK_PORT;
+    protected static final int ZK_CLIENT_TIMEOUT = 60000;
 
     protected volatile static int BROKER_COUNT = DEFAULT_BROKER_COUNT;
 
@@ -50,8 +52,9 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
     protected static ZkClient zkClient;
     protected static ZkUtils zkUtils;
 
-    protected static volatile String zkConnect;
-    protected static volatile List<KafkaServer> kafkaServers;
+    protected static List<KafkaServer> kafkaServers;
+    protected static File zkData;
+    protected static File zkLogs;
     protected static final IDefaultNameSpace DEFAULT_NAME_SPACE = new IDefaultNameSpace() {
         @Override
         public void createDefaultNameSpace(ZkClient zkClient) {
@@ -61,24 +64,40 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
 
     @BeforeClass
     public static void start() {
-        kafkaServers = new ArrayList<>();
 
-        zkServer = new ZkServer("/tmp/zk/data","/tmp/zk/log",DEFAULT_NAME_SPACE);
+        zkData = TestUtils.tempDir();
+        zkLogs = TestUtils.tempDir();
+
+        zkServer = new ZkServer(zkData.getAbsolutePath(),zkLogs.getAbsolutePath(), DEFAULT_NAME_SPACE, ZK_PORT);
+        LOGGER.debug("starting zk server ...");
         zkServer.start();
+        LOGGER.debug("started zk server");
 
-        zkClient = zkServer.getZkClient();
-        zkUtils =  ZkUtils.apply(zkClient,false);
+        // does not work for some reason
+        // zkClient = zkServer.getZkClient();
+        zkClient = new ZkClient(ZK_HOST, ZK_CLIENT_TIMEOUT, ZK_CLIENT_TIMEOUT, ZKStringSerializer$.MODULE$);
+        zkUtils =  ZkUtils.apply(zkClient, false);
 
+        kafkaServers = new ArrayList<>();
         for (int i = 0; i < BROKER_COUNT; i++) {
             LOGGER.info("starting test broker id: [{}] at port: [{}]", START_BROKER_ID + i, START_PORT + i);
 
-            Properties properties = TestUtils.createBrokerConfig(START_BROKER_ID + i,TestUtils.MockZkConnect(),
-                    true, false,START_PORT + i,
-                    Option.apply(SecurityProtocol.PLAINTEXT),Option.<File>empty(),true,false,0,false,0,false,0);
-            KafkaConfig configuration = new KafkaConfig(properties);
+            Properties properties = TestUtils.createBrokerConfig(START_BROKER_ID + i,ZK_HOST,
+                    true,
+                    true,
+                    START_PORT + i,
+                    Option.apply(SecurityProtocol.PLAINTEXT),
+                    Option.<File>empty(),
+                    true,
+                    false,
+                    0,
+                    false,
+                    0,
+                    false,
+                    0
+            );
 
-            KafkaServer kafkaServer = TestUtils.createServer(configuration, new MockTime());
-            kafkaServers.add(kafkaServer);
+            kafkaServers.add(TestUtils.createServer(new KafkaConfig(properties), new MockTime()));
         }
     }
 
@@ -87,9 +106,13 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
         for (KafkaServer kafkaServer : kafkaServers) {
             kafkaServer.shutdown();
         }
+
         kafkaServers.clear();
         zkClient.close();
         zkServer.shutdown();
+
+        Utils.delete(zkData);
+        Utils.delete(zkLogs);
     }
 
     /**
@@ -99,6 +122,7 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
      *        name to create
      */
     public static void createTopic(String topic) {
+
         createTopic(topic, 1, 1);
     }
 
@@ -107,25 +131,30 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
     }
 
     public static void createTopic(String topic, Integer partitionNum, Integer replicas) {
-        TestUtils
-                .createTopic(zkUtils, topic, partitionNum, replicas, scala.collection.JavaConversions.asScalaBuffer(kafkaServers), new Properties());
-        TestUtils.waitUntilMetadataIsPropagated(scala.collection.JavaConversions.asScalaBuffer(kafkaServers), topic, 0, TIMEOUT);
+        TestUtils.createTopic(
+                        zkUtils,
+                        topic,
+                        partitionNum,
+                        replicas,
+                        scala.collection.JavaConversions.asScalaBuffer(kafkaServers),
+                        new Properties()
+        );
     }
 
     public List<KafkaStream<byte[], byte[]>> consume(String topic) {
-        Properties consumerProperties = TestUtils.createConsumerProperties(zkConnect, UUID.randomUUID().toString(), "client", TIMEOUT);
-        //consumerProperties.setProperty("serializer.class", "kafka.serializer.StringEncoder");
 
-        ConsumerConfig consumerConfig = new ConsumerConfig(consumerProperties);
+        Properties consumerProperties = TestUtils.createConsumerProperties(
+                ZK_HOST,
+                UUID.randomUUID().toString(),
+                "client",
+                TIMEOUT);
 
         Map<String, Integer> topicCountMap = new HashMap<>();
         topicCountMap.put(topic, 1); // not sure why is this 1
 
-        Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = Consumer.createJavaConsumerConnector(consumerConfig).createMessageStreams(
-                topicCountMap);
+        Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap =
+                Consumer.createJavaConsumerConnector (new ConsumerConfig(consumerProperties)).createMessageStreams(topicCountMap);
 
-        List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic);
-
-        return streams;
+        return consumerMap.get(topic);
     }
 }

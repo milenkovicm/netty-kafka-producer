@@ -15,11 +15,11 @@
  */
 package com.github.milenkovicm.kafka.protocol;
 
+import io.netty.buffer.ByteBuf;
+
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
-
-import io.netty.buffer.ByteBuf;
 
 /**
  * @see "https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol"

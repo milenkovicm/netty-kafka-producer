@@ -15,10 +15,10 @@
  */
 package com.github.milenkovicm.kafka.util;
 
-import java.lang.reflect.Field;
-
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.util.internal.PlatformDependent;
+
+import java.lang.reflect.Field;
 
 public class Allocator {
 

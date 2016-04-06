@@ -17,7 +17,6 @@ package com.github.milenkovicm.kafka.handler;
 
 import com.github.milenkovicm.kafka.ProducerProperties;
 import com.github.milenkovicm.kafka.protocol.Convert;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;

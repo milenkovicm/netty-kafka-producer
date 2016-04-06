@@ -17,7 +17,6 @@
 package com.github.milenkovicm.kafka.connection;
 
 import com.github.milenkovicm.kafka.protocol.MetadataResponse;
-
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.EventExecutor;
 

@@ -15,19 +15,18 @@
  */
 package com.github.milenkovicm.kafka.handler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.milenkovicm.kafka.ProducerProperties;
 import com.github.milenkovicm.kafka.protocol.*;
 import com.github.milenkovicm.kafka.protocol.Error;
 import com.github.milenkovicm.kafka.util.PureJavaCrc32;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.GenericFutureListener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractProducerHandler extends ChannelDuplexHandler {
 
