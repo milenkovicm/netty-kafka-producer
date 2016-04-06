@@ -1,14 +1,14 @@
 # Netty Based Apache Kafka Producer [![Build Status](https://travis-ci.org/milenkovicm/netty-kafka-producer.svg)](https://travis-ci.org/milenkovicm/netty-kafka-producer)
 
+A POC to see if it is possible to make netty based kafka producer which utilizes netty's off-heap buffer allocators. 
 
-A very short POC to see if it is possible to make netty based kafka producer which utilizes netty's off-heap buffer allocators.  
+At the moment producer is very limited. It can connect to brokers, send messages to them, and that is more or less end of it's capabilities. 
+There is a basic support for broker or connection failures. As this is POC only, please expect many rough edges which need further attention. 
 
-At the moment producer is very limited. It can connect to brokers and send messages to them, and that is more or less end of it's capabilities. 
-There is basic support for broker or connection failures. As this is only POC please expect many rough edges which need further attention. 
+If you need battle tested producer the original one is better fit at the moment, especially if you need at-least-once semantics, 
+or any `0.9.0` feature.  
 
-If you need battle tested kafka producer the the original one is better fit at the moment, especially if you need at-least-once semantics. 
-
-Producer was tested with apache kafka 0.8.2.1.
+Producer has been tested against `0.8.2.1` and `0.9.0.1`. 
 
 ## How to use
 
@@ -44,7 +44,7 @@ properties.override(ProducerProperties.PARTITIONER, new RRPartitioner());
 KafkaProducer producer = new KafkaProducer("localhost", 9092, "test_topic", properties);
 ```
 
-Netty producer has no runtime dependency on any kafka or scala package.
+Netty producer has no runtime dependency on `kafka` or `scala` libraries.
 
 ## Copy vs composite 
 
@@ -77,7 +77,7 @@ In case of write failures `Future` will be completed with `isSuccess` `false`.
 When `Acknowledgment.WAIT_FOR_NO_ONE` is selected no acknowledgment will be available and netty will select to use 
 `channel.voidPromise()` which means no write failures could be detected. 
 
-By default it will `Acknowledgment.WAIT_FOR_LEADER`. To change it: 
+By default it waita `Acknowledgment.WAIT_FOR_LEADER`. To change it: 
 
 ```java
 ProducerProperties properties = new ProducerProperties();
@@ -173,8 +173,8 @@ public class Example {
 ```
 ## Performance numbers
 
-We didn't compare kafka native producer and netty based producer so far as it wouldn't be like to like comparison, netty based producer plays completely different role to us. 
-Some early numbers show that netty producer writes to single broker around ~100MB/s generating less than 1MB/s of heap allocation, with lot of space for further improvement.
+We haven't compared kafka off-the-shelf producer and netty based producer, as it wouldn't be like-to-like comparison, netty based producer covers completely different use-cases. 
+Some early benchmarks show that netty producer writes to single broker around ~100MB/s generating less than 1MB/s of heap allocation, with lot of space for further improvements.
 
 Few screenshots from runs we've done, pushing events to two partitions, where each partition resides on a different broker. We managed to push ~200MB/s (~100MB/s per partition) sending 128KB events.
 
