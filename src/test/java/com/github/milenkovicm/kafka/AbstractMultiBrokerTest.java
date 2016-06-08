@@ -88,13 +88,15 @@ public abstract class AbstractMultiBrokerTest extends AbstractTest {
                     START_PORT + i,
                     Option.apply(SecurityProtocol.PLAINTEXT),
                     Option.<File>empty(),
+                    Option.<Properties>empty(),
                     true,
                     false,
                     0,
                     false,
                     0,
                     false,
-                    0
+                    0,
+                    Option.<String>empty()
             );
 
             kafkaServers.add(TestUtils.createServer(new KafkaConfig(properties), new MockTime()));
